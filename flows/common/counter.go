@@ -275,7 +275,20 @@ func (f *counters) telemetry(target string) []*gpb.Notification {
 	if name == "" {
 		return nil
 	}
-	notis := []*gpb.Notification{}
+	del := &gpb.Notification{
+		Timestamp: upd[0].ts - 1,
+		Delete: []*gpb.Path{{
+			Elem: []*gpb.PathElem{{
+				Name: "flows",
+			}, {
+				Name: "flow",
+				Key:  map[string]string{"name": name},
+			}},
+		}},
+	}
+	tcommon.AddTarget(del, target)
+
+	notis := []*gpb.Notification{del}
 	for _, u := range upd {
 		notifications, err := ygot.TogNMINotifications(u.d, u.ts, ygot.GNMINotificationsConfig{UsePathElem: true})
 		if err != nil {
